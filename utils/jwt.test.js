@@ -6,7 +6,7 @@ const jwt_utils = require('./jwt')
 const monad_utils = require('./monad')
 
 test('Assert that decoding works on the happy path', () => {
-    var token = jwt.sign({ foo: 'bar' }, 'test')
+    const token = jwt.sign({ foo: 'bar' }, 'test')
     expect(
         R.compose(
             monad_utils.chain(R.prop('foo')),
@@ -31,9 +31,9 @@ test('Assert that decoding reports an error on null/undefined tokens', () => {
 })
 
 test('Assert that version checks works on the happy path', () => {
-    let assert_version_at_1 = jwt_utils.check_token_version(R.prop('version'), 1)
+    const assert_version_at_1 = jwt_utils.check_token_version(R.prop('version'), 1)
 
-    var token = jwt.sign({ foo: 'bar', version: 1 }, 'test')
+    const token = jwt.sign({ foo: 'bar', version: 1 }, 'test')
     expect(
         R.compose(
             monad_utils.chain(R.prop('foo')),
@@ -42,7 +42,7 @@ test('Assert that version checks works on the happy path', () => {
         )(token)
     ).toBe('bar')
 
-    var token2 = jwt.sign({ foo: 'bar' }, 'test')
+    const token2 = jwt.sign({ foo: 'bar' }, 'test')
     expect(
         R.compose(
             monad_utils.chain(R.prop('foo')),
@@ -53,9 +53,9 @@ test('Assert that version checks works on the happy path', () => {
 })
 
 test('Assert that version checks fail when version does not match', () => {
-    let assert_version_at_1 = jwt_utils.check_token_version(R.prop('version'), 1)
+    const assert_version_at_1 = jwt_utils.check_token_version(R.prop('version'), 1)
 
-    var token = jwt.sign({ foo: 'bar', version: 2 }, 'test')
+    const token = jwt.sign({ foo: 'bar', version: 2 }, 'test')
     expect(
         R.compose(
             monad_utils.get_value,
@@ -66,9 +66,9 @@ test('Assert that version checks fail when version does not match', () => {
 })
 
 test('Assert that expiry checks work on the happy path', () => {
-    let assert_not_expired_after_20s = jwt_utils.check_token_expiry(R.prop('expiry'), 20)
+    const assert_not_expired_after_20s = jwt_utils.check_token_expiry(R.prop('expiry'), () => 20)
 
-    var token = jwt.sign({ foo: 'bar', expiry: 30 }, 'test')
+    const token = jwt.sign({ foo: 'bar', expiry: 30 }, 'test')
     expect(
         R.compose(
             monad_utils.chain(R.prop('foo')),
@@ -77,7 +77,7 @@ test('Assert that expiry checks work on the happy path', () => {
         )(token)
     ).toBe('bar')
 
-    var token2 = jwt.sign({ foo: 'bar' }, 'test')
+    const token2 = jwt.sign({ foo: 'bar' }, 'test')
     expect(
         R.compose(
             monad_utils.chain(R.prop('foo')),
@@ -88,9 +88,9 @@ test('Assert that expiry checks work on the happy path', () => {
 })
 
 test('Assert that expiry check fails when token is expired', () => {
-    let assert_not_expired_after_20s = jwt_utils.check_token_expiry(R.prop('expiry'), 20)
+    const assert_not_expired_after_20s = jwt_utils.check_token_expiry(R.prop('expiry'), () => 20)
 
-    var token = jwt.sign({ foo: 'bar', expiry: 10 }, 'test')
+    const token = jwt.sign({ foo: 'bar', expiry: 10 }, 'test')
     expect(
         R.compose(
             monad_utils.get_value,
@@ -100,35 +100,169 @@ test('Assert that expiry check fails when token is expired', () => {
     ).toBeInstanceOf(jwt_utils.TokenExpiryError)
 })
 
+test('Assert that getting token from the header works on the happy path', () => {
+    const token = jwt.sign({ foo: 'bar', expiry: 30, version: 1 }, 'test')
+    const request = {
+        'headers': {
+            'Authorization': `Bearer ${token}`
+        }
+    }
+
+    expect(
+        R.compose(
+            monad_utils.get_value,
+            jwt_utils.get_token_from_header
+        )(request)
+    ).toBe(token)
+
+    const request2 = {
+        'headers': {
+            'Authorization': `${token}`
+        }
+    }
+
+    expect(
+        R.compose(
+            monad_utils.get_value,
+            jwt_utils.get_token_from_header
+        )(request2)
+    ).toBe(token)
+})
+
+test('Assert that getting token from header reports failure', () =>{
+    const request = {
+        'headers': {}
+    }
+
+    expect(
+        R.compose(
+            monad_utils.get_value,
+            jwt_utils.get_token_from_header
+        )(request)
+    ).toBeInstanceOf(jwt_utils.TokenUndefinedError)
+})
+
+test('Assert that getting token from the cookie works on the happy path', () => {
+    const token = jwt.sign({ foo: 'bar', expiry: 30, version: 1 }, 'test')
+    const request = {
+        'headers': {
+            'cookie': `foo=bar; jwt=${token}`
+        }
+    }
+
+    expect(
+        R.compose(
+            monad_utils.get_value,
+            jwt_utils.get_token_from_cookie('jwt')
+        )(request)
+    ).toBe(token)
+})
+
+test('Assert that getting token from the cookie reports failure', () =>{
+    const token = jwt.sign({ foo: 'bar', expiry: 30, version: 1 }, 'test')
+    const request = {
+        'headers': {
+        }
+    }
+
+    expect(
+        R.compose(
+            monad_utils.get_value,
+            jwt_utils.get_token_from_cookie('jwt')
+        )(request)
+    ).toBeInstanceOf(jwt_utils.TokenUndefinedError)
+
+    const request2 = {
+        'headers': {
+            'cookie': `foo=bar`
+        }
+    }
+
+    expect(
+        R.compose(
+            monad_utils.get_value,
+            jwt_utils.get_token_from_cookie('jwt')
+        )(request)
+    ).toBeInstanceOf(jwt_utils.TokenUndefinedError)
+
+})
+
+test('Assert that getting token from anywhere works on the happy path', () => {
+    const token = jwt.sign({ foo: 'bar', expiry: 30, version: 1 }, 'test')
+    const request = {
+        'headers': {
+            'cookie': `foo=bar; jwt=${token}`
+        }
+    }
+
+    expect(
+        R.compose(
+            monad_utils.get_value,
+            jwt_utils.get_token_anywhere('jwt')
+        )(request)
+    ).toBe(token)
+
+    const request2 = {
+        'headers': {
+            'Authorization': `Bearer ${token}`
+        }
+    }
+
+    expect(
+        R.compose(
+            monad_utils.get_value,
+            jwt_utils.get_token_anywhere('jwt')
+        )(request2)
+    ).toBe(token)
+})
+
+test('Assert that getting token from anywhere works on failure', () => {
+    const request = {
+        'headers': {
+        }
+    }
+
+    expect(
+        R.compose(
+            monad_utils.get_value,
+            jwt_utils.get_token_anywhere('jwt')
+        )(request)
+    ).toBeInstanceOf(jwt_utils.TokenUndefinedError)
+
+    const request2 = {
+        'headers': {
+            'cookie': `foo=bar`
+        }
+    }
+
+    expect(
+        R.compose(
+            monad_utils.get_value,
+            jwt_utils.get_token_anywhere('jwt')
+        )(request)
+    ).toBeInstanceOf(jwt_utils.TokenUndefinedError)
+})
+
 test('Assert that token processing behaves as expected on the happy path', () => {
     var token = jwt.sign({ foo: 'bar', expiry: 30, version: 1 }, 'test')
     var request = {
-      'headers': {
-        'Authorization': `Bearer ${token}`
-      }
+        'headers': {
+            'Authorization': `Bearer ${token}`
+        }
     }
 
-    const get_token = R.compose(
-      R.ifElse(
-        R.isNil,
-        () => Either.Left(new Error("Token undefined")),
-        (header) => Either.Right(header.substr(7))
-      ),
-      R.path(['headers', 'Authorization'])
-    )
-
     const process = jwt_utils.process_request_token(
-      get_token,
-      'test',
-      jwt_utils.check_token_version(R.prop('version'), 1),
-      jwt_utils.check_token_expiry(R.prop('expiry'), 20)
+        jwt_utils.get_token_from_header,
+        'test',
+        jwt_utils.check_token_version(R.prop('version'), 1),
+        jwt_utils.check_token_expiry(R.prop('expiry'), () => 20)
     )
 
     expect(
-      R.compose(
-        monad_utils.chain(R.prop('foo')),
-        process
-      )(request)
+        R.compose(
+            monad_utils.chain(R.prop('foo')),
+            process
+        )(request)
     ).toBe('bar')
 })
 

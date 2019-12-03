@@ -1,31 +1,62 @@
 const R = require('ramda');
 const Either = require('data.either')
 const jwt = require('jsonwebtoken')
+const cookie = require('cookie')
+
 
 const monad_utils = require('./monad')
 
-class TokenDecodeError extends Error {
+class TokenUndefinedError extends Error {
     constructor(message) {
-      super(message)
-      this.name = this.constructor.name
-      Error.captureStackTrace(this, this.constructor)
+        super(message)
+        this.name = this.constructor.name
+        Error.captureStackTrace(this, this.constructor)
     }
 }
 
+const generate_token_undefined_err = () => new TokenUndefinedError("Token undefined")
+
+class TokenDecodeError extends Error {
+    constructor(message) {
+        super(message)
+        this.name = this.constructor.name
+        Error.captureStackTrace(this, this.constructor)
+    }
+}
+
+const generate_token_decode_err = () => new TokenDecodeError("Token is not decodable")
+
 class TokenVersionError extends Error {
     constructor(message) {
-      super(message)
-      this.name = this.constructor.name
-      Error.captureStackTrace(this, this.constructor)
+        super(message)
+        this.name = this.constructor.name
+        Error.captureStackTrace(this, this.constructor)
     }
 }
 
 class TokenExpiryError extends Error {
     constructor(message) {
-      super(message)
-      this.name = this.constructor.name
-      Error.captureStackTrace(this, this.constructor)
+        super(message)
+        this.name = this.constructor.name
+        Error.captureStackTrace(this, this.constructor)
     }
+}
+
+/*
+    If the value is null/undefined, return an Either.Left monad wrapping the result of the errprFn
+    function. Otherwise, return an Either.Right monad wrapping the result of calling processingFn on
+    the value.
+    This is a higher order function. It takes the processing functions as arguments and return 
+    the function that will do the processing.
+    Signature:
+    (fn1, fn2) => ( (val) => Either(fn2(val) | fn1()) )
+*/
+const process_if_defined = (errorFn, processingFn) => {
+    return R.ifElse(
+        R.isNil,
+        R.compose(Either.Left, errorFn),
+        R.compose(Either.Right, processingFn)
+    )
 }
 
 /*
@@ -36,10 +67,9 @@ class TokenExpiryError extends Error {
   (key, encrypted_token) => Either(decrypted_token | TokenDecodeErrorError)
 */
 const decode_token = R.curry(R.compose(
-    R.ifElse(
-        R.isNil,
-        (val) => Either.Left(new TokenDecodeError("Token is not decodable with secret")),
-        Either.Right
+    process_if_defined(
+        generate_token_decode_err,
+        R.identity
     ),
     (key, token) => jwt.decode(token, key)
 ))
@@ -69,40 +99,122 @@ const check_token_version = R.curry((versionGetter, version, token) => {
   The function returns the token if the check is successful, else it returns an error.
   The result is wrapped in an Either monad.
   Signature:
-  (expiry_getter_fn, current_time_in_seconds, decrypted_token) => Either(decrypted_token | TokenExpiryError)
+  (expiry_getter_fn, get_current_time_in_seconds_fn, decrypted_token) => Either(decrypted_token | TokenExpiryError)
 */
-const check_token_expiry = R.curry((expiryGetter, currentTimeInSeconds, token) => {
+const check_token_expiry = R.curry((expiryGetter, getCurrentTimeInSeconds, token) => {
     return R.ifElse(
         R.either(
-            R.compose(R.lt(currentTimeInSeconds), expiryGetter),
+            R.converge(R.lt, [getCurrentTimeInSeconds, expiryGetter]),
             R.compose(R.isNil, expiryGetter)
         ),
         Either.Right,
         (token) => Either.Left(new TokenExpiryError("Token is expired"))
-    )(token);
+    )(token)
 })
 
+/*
+  Extract the jwt from the authorization header supporting the two following formats:
+  Bearer <token>
+  <token>
+  Signature:
+  (string) => string
+*/
+const extract_auth_header = R.ifElse(
+    R.compose(
+        (lowercase_header) => lowercase_header.startsWith('bearer '),
+        R.toLower
+    ),
+    (header) => header.substr(7),
+    R.identity
+)
+
+/*
+  Extract the encrypted jwt token from the authorization header.
+  Signature:
+  (request) => Either(encrypted_token | TokenUndefinedError)
+*/
+const get_token_from_header = R.compose(
+    process_if_defined(
+        generate_token_undefined_err,
+        extract_auth_header
+    ),
+    R.path(['headers', 'Authorization'])
+)
+
+/*
+  Extract the encrypted jwt token from the cookies.
+  This is a higher order function, it takes the jwt cookie key as an argument
+  and returns the function that will process cookies.
+  Signature:
+  (string) => ( (request) => Either(encrypted_token | TokenUndefinedError) )
+*/
+const get_token_from_cookie = (key) => {
+  return R.compose(
+      monad_utils.chain(
+          process_if_defined(
+              generate_token_undefined_err,
+              R.identity
+          )
+      ),
+      monad_utils.map(R.prop(key)),
+      process_if_defined(
+          generate_token_undefined_err,
+          (reqCookie) => cookie.parse(reqCookie)
+      ),
+      R.path(['headers', 'cookie'])
+  )
+}
+
+/*
+  Unifying encrypted jwt token fetching function that will first attempt to fetch the jwt token from the
+  request's authorization header. If that fails, it will attempt to fetch it from the request's cookie.
+  It takes the as an argument the key it should use to look for the token in the cookie.
+  Signature:
+  (string) => ( (request) => Either(encrypted_token | TokenUndefinedError) )
+*/
+const get_token_anywhere = (key) => {
+    const _get_token_from_cookie = get_token_from_cookie(key)
+    return (req) => {
+        const bearer_token = get_token_from_header(req)
+        if(bearer_token.isRight) {
+            return bearer_token
+        } else {
+            return _get_token_from_cookie(req)
+        }
+    }
+}
+
+/*
+  Higher order function that given a set of parameters will return a function that will process
+  the token of your request.
+  Signature:
+  (fn, string, fn, fn) => ( (request) => Either(token | Error) )
+*/
 const process_request_token = R.curry((
   request_token_getter,
   secret,
   versionCheckFn,
   ExpiryCheckFn
 ) => {
-    return R.compose(
-        monad_utils.chain(ExpiryCheckFn),
-        monad_utils.chain(versionCheckFn),
-        monad_utils.chain(decode_token(secret)),
-        request_token_getter
-    )
+  return R.compose(
+      monad_utils.chain(ExpiryCheckFn),
+      monad_utils.chain(versionCheckFn),
+      monad_utils.chain(decode_token(secret)),
+      request_token_getter
+  )
 })
 
 
 module.exports = {
+    TokenUndefinedError,
     TokenDecodeError,
     TokenVersionError,
     TokenExpiryError,
     decode_token,
     check_token_version,
     check_token_expiry,
-    process_request_token
+    get_token_from_header,
+    get_token_from_cookie,
+    get_token_anywhere,
+    process_request_token,
 }
