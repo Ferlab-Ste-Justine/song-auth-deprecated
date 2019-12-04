@@ -1,9 +1,9 @@
-const R = require('ramda');
+const R = require('ramda')
 const Either = require('data.either')
 const jwt = require('jsonwebtoken')
 const cookie = require('cookie')
 
-
+const generic_utils = require('./generic')
 const monad_utils = require('./monad')
 
 class TokenUndefinedError extends Error {
@@ -43,23 +43,6 @@ class TokenExpiryError extends Error {
 }
 
 /*
-    If the value is null/undefined, return an Either.Left monad wrapping the result of the errprFn
-    function. Otherwise, return an Either.Right monad wrapping the result of calling processingFn on
-    the value.
-    This is a higher order function. It takes the processing functions as arguments and return 
-    the function that will do the processing.
-    Signature:
-    (fn1, fn2) => ( (val) => Either(fn2(val) | fn1()) )
-*/
-const process_if_defined = (errorFn, processingFn) => {
-    return R.ifElse(
-        R.isNil,
-        R.compose(Either.Left, errorFn),
-        R.compose(Either.Right, processingFn)
-    )
-}
-
-/*
   Given the encrypted token, tries to decrypted it.
   It returns either the decrypted token (if successful) or an error (on failure)
   Either way, the result is wrapped in an Either monad
@@ -67,7 +50,7 @@ const process_if_defined = (errorFn, processingFn) => {
   (key, encrypted_token) => Either(decrypted_token | TokenDecodeErrorError)
 */
 const decode_token = R.curry(R.compose(
-    process_if_defined(
+  generic_utils.process_if_defined(
         generate_token_decode_err,
         R.identity
     ),
@@ -134,7 +117,7 @@ const extract_auth_header = R.ifElse(
   (request) => Either(encrypted_token | TokenUndefinedError)
 */
 const get_token_from_header = R.compose(
-    process_if_defined(
+  generic_utils.process_if_defined(
         generate_token_undefined_err,
         extract_auth_header
     ),
@@ -151,13 +134,13 @@ const get_token_from_header = R.compose(
 const get_token_from_cookie = (key) => {
   return R.compose(
       monad_utils.chain(
-          process_if_defined(
+        generic_utils.process_if_defined(
               generate_token_undefined_err,
               R.identity
           )
       ),
       monad_utils.map(R.prop(key)),
-      process_if_defined(
+      generic_utils.process_if_defined(
           generate_token_undefined_err,
           (reqCookie) => cookie.parse(reqCookie)
       ),
