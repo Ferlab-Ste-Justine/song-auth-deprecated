@@ -1,0 +1,40 @@
+version: '3.3'
+
+services:
+
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: "keycloak"
+      POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
+      POSTGRES_DB: "keycloak"
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    networks:
+      - auth
+
+  keycloak:
+    image: jboss/keycloak:4.8.3.Final
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - 8443:8443
+    volumes:
+      - ./realm-export.json:/tmp/realm-export.json
+    environment:
+      KEYCLOAK_USER: "admin"
+      KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
+      DB_VENDOR: "postgres"
+      DB_PASSWORD: ${POSTGRESQL_PASSWORD}
+      JDBC_PARAMS: "connectTimeout=30"
+      DB_ADDR: "postgres"
+      KEYCLOAK_IMPORT: /tmp/realm-export.json
+    networks:
+      - auth
+
+networks:
+  auth:
