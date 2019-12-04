@@ -50,7 +50,7 @@ class TokenExpiryError extends Error {
   (key, encrypted_token) => Either(decrypted_token | TokenDecodeErrorError)
 */
 const decode_token = R.curry(R.compose(
-  generic_utils.process_if_defined(
+    generic_utils.process_if_defined(
         generate_token_decode_err,
         R.identity
     ),
@@ -117,7 +117,7 @@ const extract_auth_header = R.ifElse(
   (request) => Either(encrypted_token | TokenUndefinedError)
 */
 const get_token_from_header = R.compose(
-  generic_utils.process_if_defined(
+    generic_utils.process_if_defined(
         generate_token_undefined_err,
         extract_auth_header
     ),
@@ -132,20 +132,20 @@ const get_token_from_header = R.compose(
   (string) => ( (request) => Either(encrypted_token | TokenUndefinedError) )
 */
 const get_token_from_cookie = (key) => {
-  return R.compose(
-      monad_utils.chain(
+    return R.compose(
+        monad_utils.chain(
+            generic_utils.process_if_defined(
+                generate_token_undefined_err,
+                R.identity
+            )
+        ),
+        monad_utils.map(R.prop(key)),
         generic_utils.process_if_defined(
-              generate_token_undefined_err,
-              R.identity
-          )
-      ),
-      monad_utils.map(R.prop(key)),
-      generic_utils.process_if_defined(
-          generate_token_undefined_err,
-          (reqCookie) => cookie.parse(reqCookie)
-      ),
-      R.path(['headers', 'cookie'])
-  )
+            generate_token_undefined_err,
+            (reqCookie) => cookie.parse(reqCookie)
+        ),
+        R.path(['headers', 'cookie'])
+    )
 }
 
 /*
@@ -174,17 +174,17 @@ const get_token_anywhere = (key) => {
   (fn, string, fn, fn) => ( (request) => Either(token | Error) )
 */
 const process_request_token = R.curry((
-  request_token_getter,
-  secret,
-  versionCheckFn,
-  ExpiryCheckFn
+    request_token_getter,
+    secret,
+    versionCheckFn,
+    ExpiryCheckFn
 ) => {
-  return R.compose(
-      monad_utils.chain(ExpiryCheckFn),
-      monad_utils.chain(versionCheckFn),
-      monad_utils.chain(decode_token(secret)),
-      request_token_getter
-  )
+    return R.compose(
+        monad_utils.chain(ExpiryCheckFn),
+        monad_utils.chain(versionCheckFn),
+        monad_utils.chain(decode_token(secret)),
+        request_token_getter
+    )
 })
 
 

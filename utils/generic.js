@@ -1,4 +1,22 @@
 const R = require('ramda')
+const Either = require('data.either')
+
+/*
+  Make a function that throws exceptions return an Either monad instead.
+  Signature:
+  ((...args) => result) => ( (...args) => Either(result | errType1 | errType2 | ...) )
+*/
+const eitherify = (throwingFN) => {
+    return (...args) => {
+        try
+        {
+            return Either.Right(throwingFN(...args))
+        } catch (e) {
+            return Either.Left(e)
+        }
+    }
+    
+}
 
 /*
     If the value is null/undefined, return an Either.Left monad wrapping the result of the errprFn
@@ -15,4 +33,17 @@ const process_if_defined = (errorFn, processingFn) => {
         R.compose(Either.Left, errorFn),
         R.compose(Either.Right, processingFn)
     )
+}
+
+/*
+    Function that parses json and returns an Either monad instead of throwing an exception.
+    Signature:
+    (encodedJSON) => Either(dict | Err)
+*/
+const parse_json = eitherify(JSON.parse)
+
+module.exports = {
+    eitherify,
+    process_if_defined,
+    parse_json
 }
