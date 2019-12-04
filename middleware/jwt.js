@@ -9,3 +9,7 @@ const get_jwt_token_middleware = (processTokenFn) => {
         }
     }
 }
+
+module.exports = {
+    get_jwt_token_middleware
+}
