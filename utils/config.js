@@ -32,12 +32,12 @@ class ConfigMalformatedError extends Error {
     - A function to transform configuration
     - A function to generate the fallback value if it is not defined
     Signature:
-    configDict: {key: string, val: string}
-    (
-        (configKey) => configDict, 
-        (configDict) => processedConfig, 
-        () => processedConfig
-    ) => (configKey) => processedConfig
+        configDict: {key: string, val: string}
+        (
+            (configKey) => configDict, 
+            (configDict) => processedConfig, 
+            () => processedConfig
+        ) => (configKey) => processedConfig
 */
 const load_config = R.curry((getConfigFn, tranformFn, fallbackFn) => R.compose(
     R.ifElse(
@@ -63,7 +63,7 @@ const load_mandatory_str_config = load_config(
 
 /*
     Signature:
-    (key, Either(dict | Err)) => Either(dict | ConfigMalformatedError)
+        (key, Either(dict | Err)) => Either(dict | ConfigMalformatedError)
 */
 const handle_json_config = (key, result) => R.ifElse(
     R.prop('isRight'),

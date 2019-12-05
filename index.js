@@ -1,12 +1,13 @@
 const R = require('ramda');
+const restify = require('restify')
 
-const generic_utils = require('../utils/generic')
-const jwt_utils = require('../utils/jwt')
-const monad_utils = require('../utils/monad')
-const configs = require('./configs')
+const generic_utils = require('./utils/generic')
+const jwt_utils = require('./utils/jwt')
+const monad_utils = require('./utils/monad')
+const configs = require('./config')
 const jwtMiddleware = require('./middleware/jwt')
 
-var server = restify.createServer();
+var server = restify.createServer()
 
 const get_current_time_in_seconds = () => Math.round( new Date().getTime() / 1000 )
 
@@ -24,13 +25,13 @@ server.use(
 
 //Throwaway logic to have something that runs for now
 function respond(req, res, next) {
-    res.send('hello ' + req.params.name);
-    next();
+    res.send('hello ' + req.params.name)
+    next()
 }
   
-server.get('/hello/:name', respond);
-server.head('/hello/:name', respond);
+server.get('/hello/:name', respond)
+server.head('/hello/:name', respond)
 
 server.listen(8080, function() {
-    console.log('%s listening at %s', server.name, server.url);
-});
+    console.log('%s listening at %s', server.name, server.url)
+})

@@ -31,9 +31,7 @@ const load_mandatory_json_env_var = (key) => {
 
 module.exports = {
     jwtSecret: load_mandatory_str_env_var('JWT_SECRET'),
-    keycloakService: load_mandatory_json_env_var('KEYCLOAK_SERVICE'),
     songService: load_mandatory_str_env_var('SONG_SERVICE'),
     scoreService: load_mandatory_str_env_var('SCORE_SERVICE'),
     servicePort: load_mandatory_str_env_var('SERVICE_PORT')
-
 }
