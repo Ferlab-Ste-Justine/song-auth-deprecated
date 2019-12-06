@@ -121,7 +121,7 @@ const get_token_from_header = R.compose(
         generate_token_undefined_err,
         extract_auth_header
     ),
-    R.path(['headers', 'Authorization'])
+    R.path(['headers', 'authorization'])
 )
 
 /*

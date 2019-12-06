@@ -4,6 +4,7 @@ const Either = require('data.either')
 
 const jwt_utils = require('./jwt')
 const monad_utils = require('./monad')
+const generic_utils = require('./generic')
 
 test('Assert that decoding works on the happy path', () => {
     const token = jwt.sign({ foo: 'bar' }, 'test')
@@ -104,7 +105,7 @@ test('Assert that getting token from the header works on the happy path', () => 
     const token = jwt.sign({ foo: 'bar', expiry: 30, version: 1 }, 'test')
     const request = {
         'headers': {
-            'Authorization': `Bearer ${token}`
+            'authorization': `Bearer ${token}`
         }
     }
 
@@ -117,7 +118,7 @@ test('Assert that getting token from the header works on the happy path', () => 
 
     const request2 = {
         'headers': {
-            'Authorization': `${token}`
+            'authorization': `${token}`
         }
     }
 
@@ -204,7 +205,7 @@ test('Assert that getting token from anywhere works on the happy path', () => {
 
     const request2 = {
         'headers': {
-            'Authorization': `Bearer ${token}`
+            'authorization': `Bearer ${token}`
         }
     }
 
@@ -243,11 +244,11 @@ test('Assert that getting token from anywhere works on failure', () => {
     ).toBeInstanceOf(jwt_utils.TokenUndefinedError)
 })
 
-test('Assert that token processing behaves as expected on the happy path', () => {
+test('Assert that token processing behaves as expected on full featured the happy path', () => {
     var token = jwt.sign({ foo: 'bar', expiry: 30, version: 1 }, 'test')
     var request = {
         'headers': {
-            'Authorization': `Bearer ${token}`
+            'authorization': `Bearer ${token}`
         }
     }
 
@@ -266,3 +267,25 @@ test('Assert that token processing behaves as expected on the happy path', () =>
     ).toBe('bar')
 })
 
+test('Assert that token processing behaves as expected with version check bypass on the happy path', () => {
+    var token = jwt.sign({ foo: 'bar', expiry: 30 }, 'test')
+    var request = {
+        'headers': {
+            'authorization': `Bearer ${token}`
+        }
+    }
+
+    const process = jwt_utils.process_request_token(
+        jwt_utils.get_token_from_header,
+        'test',
+        generic_utils.either_right_identity,
+        jwt_utils.check_token_expiry(R.prop('expiry'), () => 20)
+    )
+
+    expect(
+        R.compose(
+            monad_utils.chain(R.prop('foo')),
+            process
+        )(request)
+    ).toBe('bar')
+})

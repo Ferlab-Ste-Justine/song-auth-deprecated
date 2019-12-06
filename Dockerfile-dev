@@ -4,10 +4,10 @@ COPY package.json /opt/
 
 WORKDIR /opt/
 
-RUN npm install --production
+RUN npm install
 
 COPY . /opt/app
 WORKDIR /opt/app
 
 ENTRYPOINT [""]
-CMD ["npm", "start"]
+CMD ["npm", "run", "start-dev"]

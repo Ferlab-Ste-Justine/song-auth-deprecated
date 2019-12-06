@@ -37,7 +37,9 @@ services:
       - auth
 
   reverse-proxy:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
     ports:
       - 8080:8080
     restart: always
@@ -46,6 +48,8 @@ services:
       SONG_SERVICE: "placeholder"
       SCORE_SERVICE: "placeholder"
       SERVICE_PORT: 8080
+    volumes:
+      - .:/opt/app
     networks:
       - auth
 

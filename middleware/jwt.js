@@ -4,7 +4,7 @@ const get_jwt_token_middleware = (processTokenFn) => {
         if(!decryptedTokenEither.isRight) {
             return next(decryptedTokenEither.value)
         } else {
-            request.decryptedToken = decryptedTokenEither.value
+            req.decryptedToken = decryptedTokenEither.value
             return next()
         }
     }

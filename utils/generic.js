@@ -42,8 +42,16 @@ const process_if_defined = (errorFn, processingFn) => {
 */
 const parse_json = eitherify(JSON.parse)
 
+/*
+    Function that wraps a value in a Right Either monad.
+    Signature:
+    (val) => Either(val)
+*/
+const either_right_identity = R.compose(Either.Right, R.identity)
+
 module.exports = {
     eitherify,
     process_if_defined,
-    parse_json
+    parse_json,
+    either_right_identity
 }
