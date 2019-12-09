@@ -41,13 +41,13 @@ services:
       context: .
       dockerfile: Dockerfile-dev
     ports:
-      - 8080:8080
+      - $SERVICE_PORT:$SERVICE_PORT
     restart: always
     environment:
       JWT_SECRET: "01b99f28-1331-4fec-903b-c2e8043cec77"
-      SONG_SERVICE: "placeholder"
+      SONG_SERVICE: $SONG_SERVICE
       SCORE_SERVICE: "placeholder"
-      SERVICE_PORT: 8080
+      SERVICE_PORT: $SERVICE_PORT
     volumes:
       - .:/opt/app
     networks:

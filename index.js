@@ -1,11 +1,15 @@
-const R = require('ramda');
+const R = require('ramda')
 const restify = require('restify')
+const http_proxy = require('http-proxy')
 
 const generic_utils = require('./utils/generic')
 const jwt_utils = require('./utils/jwt')
+const access_control_utils = require('./utils/access_control')
 const monad_utils = require('./utils/monad')
-const configs = require('./config')
 const jwtMiddleware = require('./middleware/jwt')
+const accessControlMiddleware = require('./middleware/access_control')
+const configs = require('./config')
+const proxy = require('./proxy')
 
 var server = restify.createServer()
 
@@ -22,15 +26,15 @@ server.use(
     )
 )
 
-
-//Throwaway logic to have something that runs for now
-function respond(req, res, next) {
-    res.send('hello ' + req.params.name)
-    next()
-}
-  
-server.get('/hello/:name', respond)
-server.head('/hello/:name', respond)
+server.use(
+    accessControlMiddleware.access_misc_resource(
+        access_control_utils.process_resource_access(
+            access_control_utils.is_admin('clin_administrator'),
+            access_control_utils.generate_misc_access_err
+        )
+    ),
+    proxy.proxy_request(configs.songService)
+)
 
 server.listen(8080, function() {
     console.log('%s listening at %s', server.name, server.url)
