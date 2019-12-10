@@ -1,7 +1,9 @@
+//Library dependencies
 const R = require('ramda')
 const restify = require('restify')
 const http_proxy = require('http-proxy')
 
+//Internal dependencies
 const generic_utils = require('./utils/generic')
 const jwt_utils = require('./utils/jwt')
 const access_control_utils = require('./utils/access_control')
@@ -11,33 +13,39 @@ const accessControlMiddleware = require('./middleware/access_control')
 const configs = require('./config')
 const proxy = require('./proxy')
 
-var server = restify.createServer()
+//Parametrization of higher order utility functions
 
-const get_current_time_in_seconds = () => Math.round( new Date().getTime() / 1000 )
+const is_admin = access_control_utils.is_admin(configs.adminRole)
+const access_study = access_control_utils.access_study(
+    is_admin,
+    //For now the check to access study when not admin is set to always true
+    R.T
+)
+const proxy_request_to_song = proxy.proxy_request(configs.songService)
+
+//Parametrization of higher order middleware generating functions 
 
 const accessMiscResourceMiddleware = accessControlMiddleware.access_misc_resource(
     access_control_utils.process_resource_access(
-        access_control_utils.is_admin('clin_administrator'),
+        is_admin,
         access_control_utils.generate_misc_access_err
     ),
-    proxy.proxy_request(configs.songService)
+    proxy_request_to_song
 )
 
 const accessStudyResourceMiddleware = accessControlMiddleware.access_study_resource(
     R.__,
     access_control_utils.process_resource_access(
-        access_control_utils.access_study(
-            access_control_utils.is_admin('clin_administrator'),
-            //For now the check to access study is set to always true
-            R.T
-        ),
+        access_study,
         access_control_utils.generate_study_access_err
     ),
-    proxy.proxy_request(configs.songService)
+    proxy_request_to_song
 )
 
 const readStudyResourceMiddleware = accessStudyResourceMiddleware('read')
 const writeStudyResourceMiddleware = accessStudyResourceMiddleware('write')
+
+const get_current_time_in_seconds = () => Math.round( new Date().getTime() / 1000 )
 
 const getJwtTokenMiddleware = jwtMiddleware.get_jwt_token_middleware(
     jwt_utils.process_request_token(
@@ -47,6 +55,10 @@ const getJwtTokenMiddleware = jwtMiddleware.get_jwt_token_middleware(
         jwt_utils.check_token_expiry(R.prop('expiry'), get_current_time_in_seconds)
     )
 )
+
+//Routing
+
+var server = restify.createServer()
 
 //GET /swagger-ui.html
 //Get swagger docs
@@ -318,6 +330,8 @@ server.post(
     getJwtTokenMiddleware,
     writeStudyResourceMiddleware
 )
+
+//Server launch
 
 server.listen(configs.servicePort, function() {
     console.log('%s listening at %s', server.name, server.url)

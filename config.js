@@ -33,5 +33,6 @@ module.exports = {
     jwtSecret: load_mandatory_str_env_var('JWT_SECRET'),
     songService: load_mandatory_str_env_var('SONG_SERVICE'),
     scoreService: load_mandatory_str_env_var('SCORE_SERVICE'),
-    servicePort: load_mandatory_str_env_var('SERVICE_PORT')
+    servicePort: load_mandatory_str_env_var('SERVICE_PORT'),
+    adminRole: load_mandatory_str_env_var('ADMIN_ROLE')
 }

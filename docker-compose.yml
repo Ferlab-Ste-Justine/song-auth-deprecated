@@ -48,6 +48,7 @@ services:
       SONG_SERVICE: $SONG_SERVICE
       SCORE_SERVICE: "placeholder"
       SERVICE_PORT: $SERVICE_PORT
+      ADMIN_ROLE: $ADMIN_ROLE
     volumes:
       - .:/opt/app
     networks:
