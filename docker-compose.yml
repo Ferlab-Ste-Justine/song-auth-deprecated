@@ -38,7 +38,7 @@ services:
 
   reverse-proxy:
     build:
-      context: .
+      context: ./src
       dockerfile: Dockerfile-dev
     ports:
       - $SERVICE_PORT:$SERVICE_PORT
@@ -50,7 +50,7 @@ services:
       SERVICE_PORT: $SERVICE_PORT
       ADMIN_ROLE: $ADMIN_ROLE
     volumes:
-      - .:/opt/app
+      - ./src:/opt/app
     networks:
       - auth
       - $SONG_DOCKER_NETWORK
