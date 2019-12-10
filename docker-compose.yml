@@ -52,6 +52,7 @@ services:
       - .:/opt/app
     networks:
       - auth
+      - overture-dev_overture
 
   integration-tests:
     build: ./integration_tests
@@ -68,3 +69,5 @@ services:
 
 networks:
   auth:
+  overture-dev_overture:
+    external: true

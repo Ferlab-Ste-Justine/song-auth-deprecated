@@ -69,3 +69,54 @@ test('Assert that access control processing returns the expected error on failur
         )(decodedToken)
     ).toBe("I have an error indeed")
 })
+
+test('Assert that access_study works as expected when granting access', () => {
+    const decodedToken = {
+        'realm_access': {
+            'roles': ['yes', 'no', 'aktum']
+        },
+        'studies': {
+            'abc': ['read', 'write']
+        }
+    }
+    const is_aktum = access_control_utils.is_admin('aktum')
+    const is_aldoa = access_control_utils.is_admin('aldoa')
+    const has_access = R.T
+    const has_no_access = R.F
+
+    expect(
+        access_control_utils.access_study(
+            is_aktum,
+            has_no_access
+        )({'jwt': decodedToken, 'accessType': 'read', 'study': 'abc'})
+    ).toBe(true)
+
+    expect(
+        access_control_utils.access_study(
+            is_aldoa,
+            has_access
+        )({'jwt': decodedToken, 'accessType': 'read', 'study': 'abc'})
+    ).toBe(true)
+})
+
+test('Assert that access_study works as expected when denying access', () => {
+    const decodedToken = {
+        'realm_access': {
+            'roles': ['yes', 'no', 'Aktum']
+        },
+        'studies': {
+            'abc': ['read', 'write']
+        }
+    }
+    const is_aktum = access_control_utils.is_admin('aktum')
+    const is_aldoa = access_control_utils.is_admin('aldoa')
+    const has_access = R.T
+    const has_no_access = R.F
+
+    expect(
+        access_control_utils.access_study(
+            is_aldoa,
+            has_no_access
+        )({'jwt': decodedToken, 'accessType': 'read', 'study': 'abc'})
+    ).toBe(false)
+})
