@@ -44,7 +44,7 @@ services:
       - $SERVICE_PORT:$SERVICE_PORT
     restart: always
     environment:
-      JWT_SECRET: "01b99f28-1331-4fec-903b-c2e8043cec77"
+      JWT_SECRET: $JWT_SECRET
       SONG_SERVICE: $SONG_SERVICE
       SCORE_SERVICE: "placeholder"
       SERVICE_PORT: $SERVICE_PORT
@@ -53,14 +53,14 @@ services:
       - .:/opt/app
     networks:
       - auth
-      - overture-dev_overture
+      - $SONG_DOCKER_NETWORK
 
   integration-tests:
     build: ./integration_tests
     environment:
         KEYCLOAK_AUTH_URL: "https://keycloak:8443/auth/realms/clin"
         KEYCLOAK_CLIENT_ID: "clin-proxy-api"
-        KEYCLOAK_CLIENT_SECRET: "01b99f28-1331-4fec-903b-c2e8043cec77"
+        KEYCLOAK_CLIENT_SECRET: $JWT_SECRET
         KEYCLOAK_USERNAME: "test"
         KEYCLOAK_PASSWORD: "testtest"
     networks:
