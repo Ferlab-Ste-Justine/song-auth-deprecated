@@ -64,14 +64,30 @@ var server = restify.createServer()
 //Get swagger docs
 server.get(
     '/swagger-ui.html',
-    proxy.proxy_request(configs.songService)
+    proxy_request_to_song
+)
+server.get(
+    '/webjars/springfox-swagger-ui/*',
+    proxy_request_to_song
+)
+server.get(
+    '/swagger-resources',
+    proxy_request_to_song
+)
+server.get(
+    '/swagger-resources/configuration/*',
+    proxy_request_to_song
+)
+server.get(
+    '/v2/api-docs',
+    proxy_request_to_song
 )
 
 //GET /isAlive
 //Checks if the server is running
 server.get(
     '/isAlive',
-    proxy.proxy_request(configs.songService)
+    proxy_request_to_song
 )
 
 //GET /studies/{studyId}/analysis
