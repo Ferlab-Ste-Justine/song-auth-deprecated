@@ -57,12 +57,15 @@ services:
 
   integration-tests:
     build: ./integration_tests
+    volumes:
+      - ./integration_tests:/opt/integration_tests
     environment:
         KEYCLOAK_AUTH_URL: "https://keycloak:8443/auth/realms/clin"
         KEYCLOAK_CLIENT_ID: "clin-proxy-api"
         KEYCLOAK_CLIENT_SECRET: $JWT_SECRET
         KEYCLOAK_USERNAME: "test"
         KEYCLOAK_PASSWORD: "testtest"
+        REVERSE_PROXY_SERVICE: "http://reverse-proxy:$SERVICE_PORT"
     networks:
       - auth
 
