@@ -314,7 +314,7 @@ server.get(
 //POST /studies/{studyId}/
 //Creates a new study
 server.post(
-    '/studies/:studyId/',
+    '/studies/:studyId',
     getJwtTokenMiddleware,
     writeStudyResourceMiddleware
 )
