@@ -12,6 +12,7 @@ const jwtMiddleware = require('./middleware/jwt')
 const accessControlMiddleware = require('./middleware/access_control')
 const configs = require('./config')
 const proxy = require('./proxy')
+const logger = require('./logger')
 
 //Parametrization of higher order utility functions
 
@@ -53,7 +54,8 @@ const getJwtTokenMiddleware = jwtMiddleware.get_jwt_token_middleware(
         configs.jwtSecret,
         generic_utils.either_right_identity,
         jwt_utils.check_token_expiry(R.prop('expiry'), get_current_time_in_seconds)
-    )
+    ),
+    logger.authenticationLogger
 )
 
 //Routing

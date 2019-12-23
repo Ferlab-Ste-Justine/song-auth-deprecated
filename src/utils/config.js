@@ -62,6 +62,19 @@ const load_mandatory_str_config = load_config(
 )
 
 /*
+    Higher order function that, given a function to retrieve the configuration and a function that
+    returns the default value, will return the value of a configuration
+    Signature:
+        configDict: {key: string, val: string}
+        ((key) => configDict, () => string) => ( (key) => string )
+*/
+const load_optional_str_config = load_config(
+    R.__,
+    R.prop('val'),
+    R.__
+)
+
+/*
     Signature:
         (key, Either(dict | Err)) => Either(dict | ConfigMalformatedError)
 */
@@ -95,5 +108,6 @@ module.exports = {
     ConfigMalformatedError,
     load_config,
     load_mandatory_str_config,
+    load_optional_str_config,
     load_mandatory_json_config
 }

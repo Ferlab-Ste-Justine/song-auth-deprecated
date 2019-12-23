@@ -19,6 +19,8 @@ const load_mandatory_str_env_var = (key) => {
     }
 }
 
+const load_optional_str_env_var = (key, fallbackFn) => config_utils.load_optional_str_config(get_env_variable, fallbackFn)(key)
+
 const load_mandatory_json_env_var = (key) => {
     const result = _load_mandatory_json_env_var(key)
     if(result.isRight) {
@@ -34,5 +36,8 @@ module.exports = {
     songService: load_mandatory_str_env_var('SONG_SERVICE'),
     scoreService: load_mandatory_str_env_var('SCORE_SERVICE'),
     servicePort: load_mandatory_str_env_var('SERVICE_PORT'),
-    adminRole: load_mandatory_str_env_var('ADMIN_ROLE')
+    adminRole: load_mandatory_str_env_var('ADMIN_ROLE'),
+    authenticationLogger: load_optional_str_env_var('AUTHENTICATION_LOGGER', () => 'default'),
+    accessControlLogger: load_optional_str_env_var('ACCESS_CONTROL_LOGGER', () => 'default'),
+    reverseProxyLogger: load_optional_str_env_var('REVERSE_PROXY_LOGGER', () => 'default'),
 }

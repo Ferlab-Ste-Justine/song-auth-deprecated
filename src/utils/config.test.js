@@ -13,6 +13,7 @@ const get_config = (key) => {
 }
 
 const load_mandatory_str_config = config_utils.load_mandatory_str_config(get_config)
+const load_optional_str_config = config_utils.load_optional_str_config(get_config, () => "fallback")
 const load_mandatory_json_config = config_utils.load_mandatory_json_config(get_config)
 
 test('Assert that getting a mandatory string config works with the happy path', () => {
@@ -31,6 +32,18 @@ test('Assert that getting a mandatory string config works with failure', () => {
             load_mandatory_str_config
         )('test99')
     ).toBeInstanceOf(config_utils.ConfigUndefinedError)
+})
+
+test('Assert that getting an optional string config works with the happy path', () => {
+    expect(
+        load_optional_str_config('test')
+    ).toBe('test_val')
+})
+
+test('Assert that getting an optional string config works with the fallback value', () => {
+    expect(
+        load_optional_str_config('test99')
+    ).toBe('fallback')
 })
 
 test('Assert that getting a mandatory json config works with the happy path', () => {
