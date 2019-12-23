@@ -31,7 +31,8 @@ const accessMiscResourceMiddleware = accessControlMiddleware.access_misc_resourc
         is_admin,
         access_control_utils.generate_misc_access_err
     ),
-    proxy_request_to_song
+    proxy_request_to_song,
+    logger.accessControlLogger
 )
 
 const accessStudyResourceMiddleware = accessControlMiddleware.access_study_resource(
@@ -40,7 +41,8 @@ const accessStudyResourceMiddleware = accessControlMiddleware.access_study_resou
         access_study,
         access_control_utils.generate_study_access_err
     ),
-    proxy_request_to_song
+    proxy_request_to_song,
+    logger.accessControlLogger
 )
 
 const readStudyResourceMiddleware = accessStudyResourceMiddleware('read')
