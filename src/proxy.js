@@ -1,4 +1,7 @@
 var httpProxy = require('http-proxy');
+
+const logger = require('./logger')
+
 var proxy = httpProxy.createProxyServer({});
 
 //https://github.com/http-party/node-http-proxy/issues/1328
@@ -16,9 +19,29 @@ proxy.on('proxyReq', function(proxyReq, req, res, options) {
     if (req.__expectHeader) {
         proxyReq.setHeader('Expect', req.__expectHeader);
     }
+    logger.reverseProxyLogger.debug({
+        'event': 'proxyReq',
+        'request': {
+            'method': proxyReq.method,
+            'url': proxyReq.url
+        }
+    })
 });
 
-const proxy_request = (target) => ((req, res) => {  
+proxy.on('proxyRes', function(proxyRes, req, res) {
+    logger.reverseProxyLogger.info({
+        'event': 'proxyRes',
+        'request': {
+            'method': req.method,
+            'url': req.url
+        },
+        'response': {
+            'code': proxyRes.statusCode
+        }
+    })
+});
+
+const proxy_request = (target) => ((req, res) => {
     proxy.web(req, res, { target })
 })
 
