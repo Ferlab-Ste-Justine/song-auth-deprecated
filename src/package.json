@@ -1,5 +1,5 @@
 {
-  "name": "overture-oauth-reverse-proxy",
+  "name": "overture-auth-reverse-proxy",
   "version": "0.1.0",
   "main": "index.js",
   "scripts": {
