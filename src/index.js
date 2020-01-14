@@ -338,7 +338,7 @@ server.get(
 //POST /upload/{studyId}
 //Synchronously submit a json payload
 server.post(
-    '/upload/:studyId',
+    '/submit/:studyId',
     getJwtTokenMiddleware,
     writeStudyResourceMiddleware
 )
@@ -346,7 +346,7 @@ server.post(
 //POST /upload/{studyId}/force
 //Forcefully submit a json payload, ignoring analysisId collisions
 server.post(
-    '/upload/:studyId/force',
+    '/submit/:studyId/force',
     getJwtTokenMiddleware,
     writeStudyResourceMiddleware
 )
