@@ -3,9 +3,9 @@ const R = require('ramda')
 const restify = require('restify')
 const http_proxy = require('http-proxy')
 const Either = require('data.either')
+const jwt = require('@cr-ste-justine/jwt')
 
 //Internal dependencies
-const jwt_utils = require('./utils/jwt')
 const access_control_utils = require('./utils/access_control')
 const jwtMiddleware = require('./middleware/jwt')
 const accessControlMiddleware = require('./middleware/access_control')
@@ -50,11 +50,11 @@ const writeStudyResourceMiddleware = accessStudyResourceMiddleware('write')
 const get_current_time_in_seconds = () => Math.round( new Date().getTime() / 1000 )
 
 const getJwtTokenMiddleware = jwtMiddleware.get_jwt_token_middleware(
-    jwt_utils.process_request_token(
-        jwt_utils.get_token_from_header,
+    jwt.process_request_token(
+        jwt.get_token_from_header,
         configs.jwtSecret,
         Either.Right,
-        jwt_utils.check_token_expiry(R.prop('expiry'), get_current_time_in_seconds)
+        jwt.check_token_expiry(R.prop('expiry'), get_current_time_in_seconds)
     ),
     logger.authenticationLogger
 )

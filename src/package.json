@@ -11,7 +11,7 @@
     "cookie": "^0.3.1",
     "data.either": "^1.5.2",
     "http-proxy": "^1.18.0",
-    "jsonwebtoken": "^8.5.1",
+    "@cr-ste-justine/jwt": "^0.1.0",
     "ramda": "^0.26.1",
     "restify": "^8.1.1",
     "restify-errors": "^8.0.1",
