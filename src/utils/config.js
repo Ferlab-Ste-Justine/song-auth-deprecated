@@ -1,8 +1,8 @@
 const R = require('ramda')
 const Either = require('data.either')
 
-const generic_utils = require('./generic')
-const monad_utils = require('./monad')
+const fn_utils = require('@cr-ste-justine/functional-utils')
+const either_utils = fn_utils.either
 
 class ConfigUndefinedError extends Error {
     constructor(key) {
@@ -97,7 +97,7 @@ const load_mandatory_json_config = load_config(
         handle_json_config,
         [
             R.prop('key'), 
-            R.compose(generic_utils.parse_json, R.prop('val'))
+            R.compose(either_utils.parse_json, R.prop('val'))
         ]
     ),
     R.compose(Either.Left, generate_config_undefined_err, R.prop('key'))

@@ -3,8 +3,9 @@ const Either = require('data.either')
 const jwt = require('jsonwebtoken')
 const cookie = require('cookie')
 
-const generic_utils = require('./generic')
-const monad_utils = require('./monad')
+const fn_utils = require('@cr-ste-justine/functional-utils')
+const either_utils = fn_utils.either
+const monad_utils = fn_utils.monad
 
 class TokenUndefinedError extends Error {
     constructor(message) {
@@ -50,7 +51,7 @@ class TokenExpiryError extends Error {
   (key, encrypted_token) => Either(decrypted_token | TokenDecodeErrorError)
 */
 const decode_token = R.curry(R.compose(
-    generic_utils.process_if_defined(
+    either_utils.if_nil_else(
         generate_token_decode_err,
         R.identity
     ),
@@ -117,7 +118,7 @@ const extract_auth_header = R.ifElse(
   (request) => Either(encrypted_token | TokenUndefinedError)
 */
 const get_token_from_header = R.compose(
-    generic_utils.process_if_defined(
+    either_utils.if_nil_else(
         generate_token_undefined_err,
         extract_auth_header
     ),
@@ -134,13 +135,13 @@ const get_token_from_header = R.compose(
 const get_token_from_cookie = (key) => {
     return R.compose(
         monad_utils.chain(
-            generic_utils.process_if_defined(
+            either_utils.if_nil_else(
                 generate_token_undefined_err,
                 R.identity
             )
         ),
         monad_utils.map(R.prop(key)),
-        generic_utils.process_if_defined(
+        either_utils.if_nil_else(
             generate_token_undefined_err,
             (reqCookie) => cookie.parse(reqCookie)
         ),

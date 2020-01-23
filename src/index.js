@@ -2,12 +2,11 @@
 const R = require('ramda')
 const restify = require('restify')
 const http_proxy = require('http-proxy')
+const Either = require('data.either')
 
 //Internal dependencies
-const generic_utils = require('./utils/generic')
 const jwt_utils = require('./utils/jwt')
 const access_control_utils = require('./utils/access_control')
-const monad_utils = require('./utils/monad')
 const jwtMiddleware = require('./middleware/jwt')
 const accessControlMiddleware = require('./middleware/access_control')
 const configs = require('./config')
@@ -54,7 +53,7 @@ const getJwtTokenMiddleware = jwtMiddleware.get_jwt_token_middleware(
     jwt_utils.process_request_token(
         jwt_utils.get_token_from_header,
         configs.jwtSecret,
-        generic_utils.either_right_identity,
+        Either.Right,
         jwt_utils.check_token_expiry(R.prop('expiry'), get_current_time_in_seconds)
     ),
     logger.authenticationLogger
