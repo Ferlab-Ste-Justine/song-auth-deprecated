@@ -1,5 +1,5 @@
 {
-  "name": "overture-auth-reverse-proxy",
+  "name": "song-auth-reverse-proxy",
   "version": "0.3.0",
   "main": "index.js",
   "scripts": {
