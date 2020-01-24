@@ -1,6 +1,8 @@
 const R = require('ramda')
+const fn_utils = require('@cr-ste-justine/functional-utils')
+const monad_utils = fn_utils.monad
+
 const access_control_utils = require('./access_control')
-const monad_utils = require('./monad')
 
 test('Assert that admin access control works when access should be granted', () => {
     const decodedToken = {

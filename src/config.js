@@ -1,6 +1,6 @@
 const R = require('ramda')
 
-const config_utils = require('./utils/config')
+const config_utils = require('@cr-ste-justine/configs')
 
 const get_env_variable = (key) => {
     return {'key': key, 'val': R.prop(key, process.env)}
