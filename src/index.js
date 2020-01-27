@@ -97,8 +97,7 @@ server.get(
 //Retrieve all analysis objects for a studyId
 server.get(
     '/studies/:studyId/analysis',
-    getJwtTokenMiddleware,
-    readStudyResourceMiddleware
+    proxy_request_to_song
 )
 
 //PUT /studies/{studyId}/analysis/{analysisId}
@@ -113,16 +112,14 @@ server.put(
 //Retrieve the analysis object for an analysisId
 server.get(
     '/studies/:studyId/analysis/:id',
-    getJwtTokenMiddleware,
-    readStudyResourceMiddleware
+    proxy_request_to_song
 )
 
 //GET /studies/{studyId}/analysis/{id}/files
 //Retrieve the file objects for an analysisId
 server.get(
     '/studies/:studyId/analysis/:id/files',
-    getJwtTokenMiddleware,
-    readStudyResourceMiddleware
+    proxy_request_to_song
 )
 
 //PUT /studies/{studyId}/analysis/publish/{id}
@@ -137,16 +134,14 @@ server.put(
 //Search for analysis objects by specifying regex patterns for the donorIds, sampleIds, specimenIds, or fileIds request parameters
 server.get(
     '/studies/:studyId/analysis/search/id',
-    getJwtTokenMiddleware,
-    readStudyResourceMiddleware
+    proxy_request_to_song
 )
 
 //POST /studies/{studyId}/analysis/search/id
 //Search for analysis objects by specifying an IdSearchRequest
 server.post(
     '/studies/:studyId/analysis/search/id',
-    getJwtTokenMiddleware,
-    writeStudyResourceMiddleware
+    proxy_request_to_song
 )
 
 //PUT /studies/{studyId}/analysis/suppress/{id}
@@ -169,8 +164,7 @@ server.put(
 //Retrieves donor data for a donorId
 server.get(
     '/studies/:studyId/donors/:id',
-    getJwtTokenMiddleware,
-    readStudyResourceMiddleware
+    proxy_request_to_song
 )
 
 //DELETE /studies/{studyId}/donors/{ids}
@@ -185,24 +179,21 @@ server.del(
 //Exports the payload for a list of analysisIds
 server.get(
     '/export/analysis/:analysisIds',
-    getJwtTokenMiddleware,
-    accessMiscResourceMiddleware
+    proxy_request_to_song
 )
 
 //GET /export/studies/{studyId}
 //Exports all the payloads for a study
 server.get(
     '/export/studies/:studyId',
-    getJwtTokenMiddleware,
-    readStudyResourceMiddleware
+    proxy_request_to_song
 )
 
 //GET /studies/{studyId}/files/{id}
 //Retrieves file data for a fileId
 server.get(
     '/studies/:studyId/files/:id',
-    getJwtTokenMiddleware,
-    readStudyResourceMiddleware
+    proxy_request_to_song
 )
 
 //PUT /studies/{studyId}/files/{id}
@@ -225,24 +216,21 @@ server.del(
 //Page through LegacyEntity data
 server.get(
     '/entities',
-    getJwtTokenMiddleware,
-    accessMiscResourceMiddleware
+    proxy_request_to_song
 )
 
 //GET /entities/{id}
 //Read entity data for a legacy entity id
 server.get(
     '/entities/:id',
-    getJwtTokenMiddleware,
-    accessMiscResourceMiddleware
+    proxy_request_to_song
 )
 
 //GET /studies/{studyId}/samples/{id}
 //Retrieves sample data for a sampleId
 server.get(
     '/studies/:studyId/samples/:id',
-    getJwtTokenMiddleware,
-    readStudyResourceMiddleware
+    proxy_request_to_song
 )
 
 //DELETE /studies/{studyId}/samples/{ids}
@@ -257,8 +245,7 @@ server.del(
 //Retrieves a list of registered analysisTypes
 server.get(
     '/schemas',
-    getJwtTokenMiddleware,
-    accessMiscResourceMiddleware
+    proxy_request_to_song
 )
 
 //POST /schemas
@@ -274,24 +261,21 @@ server.post(
 //Retrieves the latest version of a schema for an analysisType
 server.get(
     '/schemas/:name',
-    getJwtTokenMiddleware,
-    accessMiscResourceMiddleware
+    proxy_request_to_song
 )
 
 //GET /schemas/registration
 //Retrieves the meta-schema used to validate AnalysisType schemas during registration
 server.get(
     '/schemas/registration',
-    getJwtTokenMiddleware,
-    accessMiscResourceMiddleware
+    proxy_request_to_song
 )
 
 //GET /studies/{studyId}/specimens/{id}
 //Retrieves specimen data for a specimenId
 server.get(
     '/studies/:studyId/specimens/:id',
-    getJwtTokenMiddleware,
-    readStudyResourceMiddleware
+    proxy_request_to_song
 )
 
 //DELETE /studies/{studyId}/specimens/{ids}
@@ -306,8 +290,7 @@ server.del(
 //Retrieves information for a study
 server.get(
     '/studies/:studyId',
-    getJwtTokenMiddleware,
-    readStudyResourceMiddleware
+    proxy_request_to_song
 )
 
 //POST /studies/{studyId}/
@@ -322,16 +305,14 @@ server.post(
 //Retrieves all donor, specimen and sample data for a study
 server.get(
     '/studies/:studyId/all',
-    getJwtTokenMiddleware,
-    readStudyResourceMiddleware
+    proxy_request_to_song
 )
 
 //GET /studies/all
 //Retrieves all studyIds
 server.get(
     '/studies/all',
-    getJwtTokenMiddleware,
-    accessMiscResourceMiddleware
+    proxy_request_to_song
 )
 
 //POST /upload/{studyId}
