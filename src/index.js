@@ -278,10 +278,10 @@ server.get(
     accessMiscResourceMiddleware
 )
 
-//GET /schemas/meta
-//Retrieves the meta-schema used to validate AnalysisType schemas
+//GET /schemas/registration
+//Retrieves the meta-schema used to validate AnalysisType schemas during registration
 server.get(
-    '/schemas/meta',
+    '/schemas/registration',
     getJwtTokenMiddleware,
     accessMiscResourceMiddleware
 )
@@ -338,14 +338,6 @@ server.get(
 //Synchronously submit a json payload
 server.post(
     '/submit/:studyId',
-    getJwtTokenMiddleware,
-    writeStudyResourceMiddleware
-)
-
-//POST /upload/{studyId}/force
-//Forcefully submit a json payload, ignoring analysisId collisions
-server.post(
-    '/submit/:studyId/force',
     getJwtTokenMiddleware,
     writeStudyResourceMiddleware
 )
