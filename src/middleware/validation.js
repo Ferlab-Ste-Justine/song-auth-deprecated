@@ -1,4 +1,5 @@
 const R = require('ramda')
+const errors = require('restify-errors')
 
 const check_body = R.curry((querySchema, logger, preprocessor = null) => (req, res, next) => {
     if(preprocessor) {
@@ -10,9 +11,9 @@ const check_body = R.curry((querySchema, logger, preprocessor = null) => (req, r
                 'method': req.method,
                 'url': req.url,
                 'validation': 'failed',
-                'error': validation.error
+                'error': err
             })
-            res.status(400).send(validation.error)
+            next(new errors.BadRequestError('Body could not be processed'))
         }
         
     } else {
@@ -35,7 +36,7 @@ const check_body = R.curry((querySchema, logger, preprocessor = null) => (req, r
             'validation': 'failed',
             'error': validation.error
         })
-        res.status(400).send(validation.error)
+        next(new errors.BadRequestError(validation.error))
     }
 })
 

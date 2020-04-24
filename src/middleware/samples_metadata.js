@@ -1,6 +1,7 @@
 const R = require('ramda')
 const request = require('request-promise-native')
-var errors = require('request-promise-native/errors');
+const errors = require('request-promise-native/errors');
+const restify_errors = require('restify-errors')
 
 const fill_samples_metadata = R.curry((samples_metadata_service, logger) => {
     return (req, res, next) => {
@@ -32,7 +33,11 @@ const fill_samples_metadata = R.curry((samples_metadata_service, logger) => {
                 'details': reason.message
             })
             //https://github.com/request/promise-core/blob/master/lib/errors.js#L22
-            res.status(reason.statusCode).send(reason.error)
+            if(reason.statusCode>=400 && reason.statusCode<500) {
+                next(new restify_errors.BadRequestError('Bad request'))
+            } else {
+                next(new restify_errors.InternalServerError('Could not resolve request'))
+            }
         })
         .catch(errors.RequestError, function (reason) {
             logger.warn({
@@ -43,7 +48,7 @@ const fill_samples_metadata = R.curry((samples_metadata_service, logger) => {
                 'failure_type': 'failure_to_reach_service',
                 'reason': reason
             })
-            res.status(500).send('Could not resolve request')
+            next(new restify_errors.InternalServerError('Could not resolve request'))
         });
     }
 })
