@@ -10,12 +10,11 @@ const check_body = R.curry((querySchema, logger, preprocessor = null) => (req, r
                 'event': 'incoming_request',
                 'method': req.method,
                 'url': req.url,
-                'validation': 'failed',
+                'validation': 'failed while preprocessing',
                 'error': err
             })
-            next(new errors.BadRequestError('Body could not be processed'))
+            return next(new errors.BadRequestError('Body could not be processed'))
         }
-        
     } else {
         const body = req.body
     }
@@ -27,7 +26,7 @@ const check_body = R.curry((querySchema, logger, preprocessor = null) => (req, r
             'url': req.url,
             'validation': 'passed'
         })
-        next()
+        return next()
     } else {
         logger.info({
             'event': 'incoming_request',
@@ -36,7 +35,7 @@ const check_body = R.curry((querySchema, logger, preprocessor = null) => (req, r
             'validation': 'failed',
             'error': validation.error
         })
-        next(new errors.BadRequestError(validation.error))
+        return next(new errors.BadRequestError(validation.error))
     }
 })
 
