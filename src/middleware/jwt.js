@@ -11,14 +11,16 @@ const get_jwt_token_middleware = (processTokenFn, logger) => {
             let err = new errors.UnauthorizedError("Invalid Credentials")
             err.body.context = decryptedTokenEither.value
             logger.info({
-                'authenticated': false,
+                'event': 'authentication',
+                'status': 'failure',
                 'error': decryptedTokenEither.value
             })
             return next(err)
         } else {
             req.decryptedToken = decryptedTokenEither.value
             logger.debug({
-                'authenticated': true,
+                'event': 'authentication',
+                'status': 'success',
                 'token': req.decryptedToken
             })
             return next()

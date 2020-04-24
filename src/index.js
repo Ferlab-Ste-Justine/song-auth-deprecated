@@ -3,12 +3,15 @@ const R = require('ramda')
 const restify = require('restify')
 const http_proxy = require('http-proxy')
 const Either = require('data.either')
+const Joi = require('@hapi/joi')
 const jwt = require('@cr-ste-justine/jwt')
 
 //Internal dependencies
 const access_control_utils = require('./utils/access_control')
 const jwtMiddleware = require('./middleware/jwt')
 const accessControlMiddleware = require('./middleware/access_control')
+const validationMiddleware = require('./middleware/validation')
+const samplesMetadataMiddleware = require('./middleware/samples_metadata')
 const configs = require('./config')
 const proxy = require('./proxy')
 const logger = require('./logger')
@@ -57,6 +60,26 @@ const getJwtTokenMiddleware = jwtMiddleware.get_jwt_token_middleware(
         jwt.check_token_expiry(R.prop('expiry'), get_current_time_in_seconds)
     ),
     logger.authenticationLogger
+)
+
+const nonEmptyString = Joi.string().min(1).required()
+const uploadBody= Joi.object({
+    'studyId': nonEmptyString,
+    'samples': Joi.array().items(
+        Joi.object({
+            'submitterSampleId': nonEmptyString
+        }).unknown(true)
+    )
+}).unknown(true)
+const uploadBodyValidationMiddleware = validationMiddleware.check_body(
+    uploadBody,
+    logger.validationLogger,
+    JSON.parse
+)
+
+const fillSamplesMetadataMiddleware = samplesMetadataMiddleware.fill_samples_metadata(
+    configs.sampleMetadataService,
+    logger.sourceLogger
 )
 
 //Routing
@@ -338,6 +361,8 @@ server.get(
 //Synchronously submit a json payload
 server.post(
     '/submit/:studyId',
+    uploadBodyValidationMiddleware,
+    fillSamplesMetadataMiddleware,
     getJwtTokenMiddleware,
     writeStudyResourceMiddleware
 )

@@ -27,6 +27,8 @@ const loggers = {
 }
 
 module.exports = {
+    sourceLogger: loggers[configs.sourceLogger],
+    validationLogger: loggers[configs.validationLogger],
     authenticationLogger: loggers[configs.authenticationLogger],
     accessControlLogger: loggers[configs.accessControlLogger],
     reverseProxyLogger: loggers[configs.reverseProxyLogger]
