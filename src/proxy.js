@@ -19,6 +19,14 @@ proxy.on('proxyReq', function(proxyReq, req, res, options) {
     if (req.__expectHeader) {
         proxyReq.setHeader('Expect', req.__expectHeader);
     }
+
+    if(req.body) {
+        const body = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type','application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(body));
+        proxyReq.write(body);
+    }
+    
     logger.reverseProxyLogger.debug({
         'event': 'proxyReq',
         'request': {

@@ -5,7 +5,7 @@ const restify_errors = require('restify-errors')
 
 const fill_samples_metadata = R.curry((samples_metadata_service, logger) => {
     return (req, res, next) => {
-        const body = JSON.parse(req.body)
+        const body = req.body
         const sampleSubmitterIdRequests = R.compose(
             R.map((sampleSubmitterId) => request(
                 `${samples_metadata_service}/studies/${body.studyId}/samples/with-submitter-id/${sampleSubmitterId}/song-metadata`

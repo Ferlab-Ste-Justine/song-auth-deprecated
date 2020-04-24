@@ -1,7 +1,7 @@
 //Library dependencies
 const R = require('ramda')
-const restify = require('restify')
-const http_proxy = require('http-proxy')
+const bodyParser = require('body-parser');
+const express = require('express')
 const Either = require('data.either')
 const Joi = require('@hapi/joi')
 const jwt = require('@cr-ste-justine/jwt')
@@ -73,8 +73,7 @@ const uploadBody= Joi.object({
 }).unknown(true)
 const uploadBodyValidationMiddleware = validationMiddleware.check_body(
     uploadBody,
-    logger.validationLogger,
-    JSON.parse
+    logger.validationLogger
 )
 
 const fillSamplesMetadataMiddleware = samplesMetadataMiddleware.fill_samples_metadata(
@@ -84,7 +83,7 @@ const fillSamplesMetadataMiddleware = samplesMetadataMiddleware.fill_samples_met
 
 //Routing
 
-var server = restify.createServer()
+const server = express()
 
 //GET /swagger-ui.html
 //Get swagger docs
@@ -361,11 +360,38 @@ server.get(
 //Synchronously submit a json payload
 server.post(
     '/submit/:studyId',
+    bodyParser.json(),
     uploadBodyValidationMiddleware,
     fillSamplesMetadataMiddleware,
     getJwtTokenMiddleware,
     writeStudyResourceMiddleware
 )
+
+const err_message = R.path(['body', 'message'])
+const err_code = R.path(['body', 'code'])
+const err_has_code = R.compose(R.not, R.isNil, err_code)
+server.use(function (err, req, res, next) {
+    if (err_has_code(err)) {
+        const code = err_code(err)
+        if(code == 'BadRequest') {
+            res.status(400).send(err_message(err))
+        } else if(code == 'Unauthorized') {
+            res.status(401).send(err_message(err))
+        } else if(code == 'Forbidden') {
+            res.status(403).send(err_message(err))
+        } else if (code == 'NotFound') {
+            res.status(404).send(err_message(err))
+        } else if (code == 'InternalServer') {
+            res.status(500).send(err_message(err))
+        } else if (code == 'ServiceUnavailable') {
+            res.status(503).send(err_message(err))
+        } else {
+            res.status(500).send('Undefined Error')
+        }
+    } else {
+        return next(err)
+    }
+})
 
 //Server launch
 
