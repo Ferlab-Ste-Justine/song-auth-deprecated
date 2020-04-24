@@ -21,7 +21,7 @@ const fill_samples_metadata = R.curry((samples_metadata_service, logger) => {
                 'status': 'success'
             })
             const filledBody = R.mergeAll([body, { samples: R.map(JSON.parse, samples) }])
-            req.body = JSON.stringify(filledBody)
+            req.body = filledBody
             next()
         }).catch(errors.StatusCodeError, function (reason) {
             logger.info({
