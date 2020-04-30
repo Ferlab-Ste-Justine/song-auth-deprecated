@@ -1,9 +1,28 @@
 const R = require('ramda')
 const errors = require('restify-errors')
 
+//Implementation details of flagging external access so that further middleware can check for it
+//in an implementation-agnostic manner.
+const flag_external_access = (logger) => {
+    return (req, res, next) => {
+        req.externalRequest = req.headers['x-external-request'] == "1"
+        if(!req.externalRequest) {
+            logger.info({
+                'event': 'internal_request',
+                'method': req.method,
+                'url': req.url
+            })  
+        }
+        next()
+    }
+}
+
 //processMiscAccessFn: (decrypted_jwt) => Either(true | err)
 const access_misc_resource = R.curry((processMiscAccessFn, proxyReqFn, logger) => {
     return (req, res, next) => {
+        if(!req.externalRequest) {
+            return next()
+        }
         const access = processMiscAccessFn(req.decryptedToken)
         if(access.isRight) {
             logger.info({
@@ -28,6 +47,9 @@ const access_misc_resource = R.curry((processMiscAccessFn, proxyReqFn, logger) =
 //processStudyAccessFn: (Access) =>  => Either(true | err)
 const access_study_resource = R.curry((accessType, processStudyAccessFn, proxyReqFn, logger) => {
     return (req, res, next) => {
+        if(!req.externalRequest) {
+            return next()
+        }
         const access = processStudyAccessFn({
             'jwt': req.decryptedToken,
             'accessType': accessType,
@@ -58,5 +80,6 @@ const access_study_resource = R.curry((accessType, processStudyAccessFn, proxyRe
 
 module.exports = {
     access_misc_resource,
-    access_study_resource
+    access_study_resource,
+    flag_external_access
 }

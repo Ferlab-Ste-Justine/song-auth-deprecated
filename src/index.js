@@ -81,9 +81,13 @@ const fillSamplesMetadataMiddleware = samplesMetadataMiddleware.fill_samples_met
     logger.sourceLogger
 )
 
+const flagExternalAccessMiddleware = accessControlMiddleware.flag_external_access(logger.accessControlLogger)
+
 //Routing
 
 const server = express()
+
+server.use(flagExternalAccessMiddleware)
 
 //GET /swagger-ui.html
 //Get swagger docs
