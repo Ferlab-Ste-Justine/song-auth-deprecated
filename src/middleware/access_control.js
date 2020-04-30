@@ -13,7 +13,7 @@ const flag_external_access = (logger) => {
                 'url': req.url
             })  
         }
-        next()
+        return next()
     }
 }
 
@@ -21,7 +21,8 @@ const flag_external_access = (logger) => {
 const access_misc_resource = R.curry((processMiscAccessFn, proxyReqFn, logger) => {
     return (req, res, next) => {
         if(!req.externalRequest) {
-            return next()
+            proxyReqFn(req, res)
+            return
         }
         const access = processMiscAccessFn(req.decryptedToken)
         if(access.isRight) {
@@ -48,7 +49,8 @@ const access_misc_resource = R.curry((processMiscAccessFn, proxyReqFn, logger) =
 const access_study_resource = R.curry((accessType, processStudyAccessFn, proxyReqFn, logger) => {
     return (req, res, next) => {
         if(!req.externalRequest) {
-            return next()
+            proxyReqFn(req, res)
+            return
         }
         const access = processStudyAccessFn({
             'jwt': req.decryptedToken,
